@@ -12,12 +12,27 @@ const port = process.env.PORT || 3000
 const publicPath = path.join(__dirname,'../public')
 
 app.use(express.static(publicPath))
-const count = 0
+// let count = 0
 
 io.on('connection',(socket) => {
     console.log('connected user')
-    socket.emit('countUpdated',count)
+    socket.emit('msg', 'Welcome!')
+    socket.broadcast.emit('msg','A new user joind')
 
+    socket.on('message',(message,callback) => {
+        io.emit('msg',message)
+        callback('deliverd macha')
+    })
+    socket.on('sendLocation',( {
+        latitude,
+        longitude
+    }) => {
+        io.emit('msg',`https://google.com/maps?q=${latitude},${longitude}`)
+    })
+
+    socket.on('disconnect',() => {
+        io.emit('msg','disconnected new user')
+    })
 })
 
 
