@@ -2,6 +2,7 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
+const Filter = require('bad-words')
 
 const app = express()
 const server = http.createServer(app)
@@ -20,14 +21,19 @@ io.on('connection',(socket) => {
     socket.broadcast.emit('msg','A new user joind')
 
     socket.on('message',(message,callback) => {
+        const filter = new Filter()
+        if(filter.isProfane(message)){
+            return callback('Bad word macha')
+        }
         io.emit('msg',message)
-        callback('deliverd macha')
+        callback()
     })
     socket.on('sendLocation',( {
         latitude,
         longitude
-    }) => {
-        io.emit('msg',`https://google.com/maps?q=${latitude},${longitude}`)
+    },callback) => {
+        io.emit('locationMessage',`https://google.com/maps?q=${latitude},${longitude}`)
+        callback('Location shared succesfully')
     })
 
     socket.on('disconnect',() => {
