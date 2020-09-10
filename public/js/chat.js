@@ -6,7 +6,7 @@ const socket =  io()
 const $messageForm = document.querySelector('#message-form')
 const $messageFormInput = document.querySelector('input')
 const $messageFormButton = document.querySelector('button')
-const $locationButton = document.querySelector('#location')
+const $locationButton = document.querySelector('#send-location')
 const $messages = document.querySelector('#messages')
 
 //templets 
@@ -16,14 +16,16 @@ const locationTemplet = document.querySelector('#location-templet').innerHTML
 socket.on('msg',(message) => {
     console.log(message)
     const html = Mustache.render(messageTemplet,{
-    message
+    message:message.text,
+    createdAt:moment(message.createdAt).format('hh:mm a')
 })
     $messages.insertAdjacentHTML('beforeend',html)
 })
-socket.on('locationMessage',(url) => {
-    console.log(url)
+socket.on('locationMessage',(message) => {
+    console.log(message)
     const html = Mustache.render(locationTemplet,{
-        url
+        url:message.url,
+        createdAt:moment(message.createdAt).format('hh:mm a')
     })
     $messages.insertAdjacentHTML('beforeend',html)
 })
