@@ -8,13 +8,39 @@ const $messageFormInput = document.querySelector('input')
 const $messageFormButton = document.querySelector('button')
 const $locationButton = document.querySelector('#send-location')
 const $messages = document.querySelector('#messages')
+const $sidebar = document.querySelector('#sidebar')
 
 //templets 
 const messageTemplet = document.querySelector('#message-templet').innerHTML
 const locationTemplet = document.querySelector('#location-templet').innerHTML
+const sidebarTemplet = document.querySelector('#sidebar-templet').innerHTML
+
 
 //options
 const { username , room } = Qs.parse(location.search,{ ignoreQueryPrefix: true})
+
+const autoscroll = () => {
+    //new message element
+    const newMessage = $messages.lastElementChild
+
+    //find height of message element
+    const newMessageStyles = getComputedStyle(newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+    const newMessageHeight = newMessage.offsetHeight + newMessageMargin
+
+    //visible Height
+    const visibleHeight = $messages.offsetHeight
+
+    //height of message container 
+    const containerHeight = $messages.scrollHeight
+
+    //How far have i scrolled
+    const scrolloffset = $messages.scrollTop + visibleHeight
+
+    if(containerHeight-newMessageHeight <= scrolloffset){
+        $messages.scrollTop = containerHeight
+    }
+}
 
 socket.on('msg',(message) => {
     console.log(message)
@@ -22,8 +48,10 @@ socket.on('msg',(message) => {
     username:message.username,
     message:message.text,
     createdAt:moment(message.createdAt).format('hh:mm a')
-})
+    })
     $messages.insertAdjacentHTML('beforeend',html)
+    autoscroll()
+    
 })
 socket.on('locationMessage',(message) => {
     console.log(message)
@@ -33,9 +61,14 @@ socket.on('locationMessage',(message) => {
         createdAt:moment(message.createdAt).format('hh:mm a')
     })
     $messages.insertAdjacentHTML('beforeend',html)
+    autoscroll()
 })
 socket.on('roomData',({ room , users}) => {
-    console.log(users)
+   const html = Mustache.render(sidebarTemplet,{
+       room,
+       users
+   })
+   $sidebar.innerHTML = html
 })
 
 
